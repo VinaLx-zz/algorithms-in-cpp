@@ -26,10 +26,10 @@ bool Dfs(const UndirectedUnweightedGraph& graph, size_t start) {
     for (auto adj : adjacent_vertices) {
         if (not color[adj]) {
             color[adj] = GetAnotherColor(color[start]);;
-            if (not Dfs(graph, start)) {
+            if (not Dfs(graph, adj)) {
                 return false;
             }
-        } else if (color[adj] != color[start]) {
+        } else if (color[adj] == color[start]) {
             return false;
         }
     }

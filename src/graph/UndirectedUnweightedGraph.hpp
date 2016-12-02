@@ -13,7 +13,7 @@ namespace graph {
 
 class UndirectedUnweightedGraph : public UnweightedGraph {
   public:
-    UndirectedUnweightedGraph(size_t vertex_num)
+    UndirectedUnweightedGraph(size_t vertex_num = 0)
         : UnweightedGraph(vertex_num) {}
 
     void AddEdge(Vertex vertex1, Vertex vertex2) {
