@@ -9,6 +9,8 @@
 
 namespace vinalx {
 
+namespace graph {
+
 class UndirectedWeightedGraph : public WeightedGraph {
   public:
     UndirectedWeightedGraph(size_t vertex_num = 0)
@@ -24,6 +26,8 @@ class UndirectedWeightedGraph : public WeightedGraph {
         WeightedGraph::RemoveEdge(vertex2, vertex1);
     }
 };
-}
+
+}  // namespace graph
+}  // namespace vinalx
 
 #endif  // UNDIRECTED_WEIGHTED_GRAPH_

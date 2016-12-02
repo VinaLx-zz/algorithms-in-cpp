@@ -11,6 +11,8 @@
 
 namespace vinalx {
 
+namespace graph {
+
 class WeightedGraph {
   public:
     /**
@@ -87,8 +89,10 @@ class WeightedGraph {
     }
 
     void RemoveEdge(Vertex from, Vertex to) {
+        edge_num_ -= adjacency_lists_[from].size();
         adjacency_lists_[from].remove_if(
             [to](const Edge& edge) { return edge.to == to; });
+        edge_num_ += adjacency_lists_[from].size();
     }
 
     /**
@@ -118,6 +122,9 @@ class WeightedGraph {
 
 };  // WeightedGraph
 
+using Graph = WeightedGraph;
+
+}  // namespace graph
 }  // namespace vinalx
 
 #endif  // WEIGHTED_GRAPH_HPP_

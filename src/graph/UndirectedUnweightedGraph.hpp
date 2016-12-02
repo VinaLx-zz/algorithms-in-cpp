@@ -9,6 +9,8 @@
 
 namespace vinalx {
 
+namespace graph {
+
 class UndirectedUnweightedGraph : public UnweightedGraph {
   public:
     UndirectedUnweightedGraph(size_t vertex_num)
@@ -25,6 +27,7 @@ class UndirectedUnweightedGraph : public UnweightedGraph {
     }
 };
 
+}  // namespace graph
 }  // namespace vinalx
 
 #endif  // UNDIRECTED_UNWEIGHTED_GRAPH_HPP_
