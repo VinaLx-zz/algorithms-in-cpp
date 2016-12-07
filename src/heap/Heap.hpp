@@ -1,8 +1,9 @@
-#ifndef HEAP_H
-#define HEAP_H
+#ifndef HEAP_HPP_
+#define HEAP_HPP_
 
 #include <cassert>
-#include <type_traits>
+#include <functional>
+#include <iterator>
 #include <utility>  // std::swap
 #include <vector>
 
@@ -10,14 +11,134 @@ namespace vinalx {
 
 using std::size_t;
 
+namespace heap {
+
+namespace {
+
+#define LEFT_NODE(offset) (offset * 2 + 1)
+#define RIGHT_NODE(offset) ((offset + 1) * 2)
+#define PARENT_NODE(offset) ((offset - 1) / 2)
+
+template <typename Iter>
+auto GetElemHelper(Iter start) {
+    return [start](typename Iter::difference_type offset) ->
+           typename Iter::value_type& {
+        return *std::advance(start, offset);
+    };
+}
+
+template <typename Iter, typename Comp = std::less<typename Iter::value_type>>
+void Sink(
+    Iter start, Iter finish, Comp cmp = Comp(),
+    typename Iter::difference_type target = -1) {
+    typename Iter::difference_type current = target == -1 ? 0 : target,
+                                   stop = std::distance(start, finish);
+    auto GetElem = GetElemHelper(start);
+    for (;;) {
+        auto left = LEFT_NODE(current), right = RIGHT_NODE(current);
+        decltype(current) bigger;
+        if (not left < stop) {
+            return;
+        }
+        if (not right < stop) {
+            bigger = left;
+        } else {
+            bigger = cmp(GetElem(left), GetElem(right)) ? right : left;
+        }
+        if (cmp(GetElem(current), GetElem(bigger))) {
+            std::swap(GetElem(current), GetElem(bigger));
+            current = bigger;
+        } else {
+            return;
+        }
+    }
+}
+
+template <typename Iter, typename Comp = std::less<typename Iter::value_type>>
+void Swim(Iter top, Iter tail, Comp cmp = Comp()) {
+    typename Iter::difference_type current = std::distance(top, tail), stop = 0;
+    auto GetElem = GetElemHelper(top);
+    for (;;) {
+        auto parent = PARENT_NODE(current);
+        if (cmp(GetElem(parent), GetElem(current))) {
+            std::swap(GetElem(parent), GetElem(current));
+            current = parent;
+        } else {
+            break;
+        }
+        if (parent == 0) {
+            break;
+        }
+    }
+    Sink(top, next(tail), cmp, current);
+}
+
+#undef LEFT_NODE
+#undef RIGHT_NODE
+#undef PARENT_NODE
+
+}  // anonymous namespace
+
+/**
+ * heapify the range specified
+ */
+template <typename Iter, typename Comp = std::less<typename Iter::value_type>>
+void Heapify(Iter start, Iter finish, Comp cmp = Comp()) {
+    for (Iter current = std::next(start); current != finish;) {
+        PushHeap(start, current, cmp);
+        std::advance(current, 1);
+    }
+}
+
+/**
+ * push the last element in the range to the heap
+ */
+template <typename Iter, typename Comp = std::less<typename Iter::value_type>>
+void PushHeap(Iter start, Iter finish, Comp cmp = Comp()) {
+    Swim(start, std::prev(finish), cmp);
+}
+
+/**
+ * move the first element from the end of the range
+ * and maintain the rest as a heap
+ */
+template <typename Iter, typename Comp = std::less<typename Iter::value_type>>
+Iter PopHeap(Iter start, Iter finish, Comp cmp = Comp()) {
+    std::iter_swap(start, std::prev(finish));
+    Sink(start, prev(finish));
+}
+
+/**
+ * determine whether the range is a heap
+ */
+template <typename Iter, typename Comp = std::less<typename Iter::value_type>>
+bool IsHeap(Iter start, Iter finish, Comp cmp = Comp()) {
+    auto GetElem = GetElemHelper(start);
+    for (typename Iter::difference_type current = 0,
+                                        stop = std::distance(start, finish);
+         ;) {
+        auto left = LEFT_NODE(current), right = RIGHT_NODE(current);
+        if (not left < stop) {
+            break;
+        }
+        if (not cmp(GetElem(left), GetElem(current))) {
+            return false;
+        }
+        if (right < stop) {
+            if (not cmp(GetElem(right), GetElem(current))) {
+                return false;
+            }
+        } else {
+            break;
+        }
+    }
+    return true;
+}
+
 template <typename T>
 class Heap {
-    std::vector<T> data_;
-
   public:
-    template <typename FwdIter,
-              typename = typename std::enable_if<std::is_convertible<
-                  typename FwdIter::value_type, T>::value>::type>
+    template <typename FwdIter>
     Heap(FwdIter begin, FwdIter end) : data_(begin, end) {
         Heapify();
     }
@@ -33,10 +154,8 @@ class Heap {
         }
         return true;
     }
-#endif
 
-#ifdef VINALX_DEBUG
-    std::vector<T> &Data() {
+    std::vector<T>& Data() {
         return data_;
     }
 #endif
@@ -137,8 +256,13 @@ class Heap {
         }
         data_[current] = swimmer;
     }
+
+  private:
+    std::vector<T> data_;
 };
+
+}  // namespace heap
 
 }  // namespace vinalx
 
-#endif
+#endif  // HEAP_H_

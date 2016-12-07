@@ -5,9 +5,10 @@
 #define GRAPH_SHORTEST_PATH_
 
 #include <algorithm>
+#include <utility>
 #include <climits>
 #include <deque>
-#include <queue>
+#include <map>
 #include <vector>
 #include "graph/WeightedGraph.hpp"
 
@@ -25,6 +26,7 @@ inline bool Has(
     const Container& container, const typename Container::value_type& value) {
     return std::find(begin(container), end(container), value) != end(container);
 }
+
 }  // anonymous namespace
 
 /**
@@ -34,7 +36,8 @@ inline bool Has(
  * @param to    destination vertex
  * @return      total weight of shortest path
  */
-int Dijkstra(const WeightedGraph& graph, Graph::Vertex from, Graph::Vertex to);
+int Dijkstra(const WeightedGraph& graph, Graph::Vertex from, Graph::Vertex to) {
+}
 
 /**
  * shortest path faster algorithm
