@@ -142,130 +142,42 @@ bool IsHeap(Iter start, Iter finish, Comp cmp = Comp()) {
 #undef RIGHT_NODE
 #undef PARENT_NODE
 
-template <typename T>
+/**
+ * priority queue
+ */
+template <typename T, typename Comp = std::less<T>>
 class Heap {
   public:
-    template <typename FwdIter>
-    Heap(FwdIter begin, FwdIter end) : data_(begin, end) {
-        Heapify();
+    template <typename Iter>
+    Heap(Iter start, Iter finish, Comp compare = Comp())
+    : heap_(start, finish), compare_(compare) {
+        Heapify(begin(heap_), end(heap_), compare_);
     }
 
-    Heap() {}
+    Heap(Comp compare = Comp()): compare_(compare) {}
 
-  public:
-#ifdef VINALX_DEBUG
-    bool IsHeap() {
-        for (size_t i{data_.size() - 1}; i > 0; --i) {
-            if (data_[i] > data_[parent(i)])
-                return false;
-        }
-        return true;
+    void Push(const T& elem) {
+        heap_.push_back(elem);
+        PushHeap(begin(heap_), end(heap_), compare_);
     }
 
-    std::vector<T>& Data() {
-        return data_;
-    }
-#endif
-
-    void Heapify() {
-        for (size_t i{1}; i < data_.size(); ++i) {
-            Swim(i);
-        }
+    T Pop() {
+        T ret = *PopHeap(begin(heap_), end(heap_), compare_);
+        heap_.pop_back();
+        return ret;
     }
 
-    void Push(T p_value) {
-        data_.push_back(p_value);
-        Swim(data_.size() - 1);
+    size_t Size() const {
+        return heap_.size();
     }
 
-    void Pop() {
-        data_.front() = data_.back();
-        data_.pop_back();
-        Sink(0);
-    }
-
-    T Top() const {  // max
-        return data_.at(0);
-    }
-
-    void Sort() {
-#ifdef VINALX_DEBUG
-        assert(IsHeap());
-#endif
-        for (size_t boundary{data_.size() - 1}; boundary > 0;) {
-            std::swap(data_.front(), data_[boundary]);
-            Sink(0, --boundary);
-        }
-    }
-
-    bool Empty() const {
-        return data_.empty();
-    }
-
-    void Clear() {
-        data_.clear();
+    const std::vector<T>& Data() const {
+        return heap_;
     }
 
   private:
-    static size_t left(size_t parent) {
-        return parent * 2 + 1;
-    }
-    static size_t right(size_t parent) {
-        return (parent + 1) * 2;
-    }
-    static size_t parent(size_t leaf) {
-        return (leaf - 1) / 2;
-    }
-
-    void Sink(const size_t target) {
-        Sink(target, data_.size() - 1);
-    }
-
-    void Swim(const size_t target) {
-        Swim(target, 0);
-    }
-
-    void Sink(const size_t target, const size_t bottom) {
-        if (target >= bottom)
-            return;
-        T sinker{data_[target]};
-        size_t current{target};
-        for (T max_leaf; left(current) <= bottom;) {
-            size_t max_index;
-            if (right(current) > bottom or
-                data_[right(current)] < data_[left(current)])
-                max_index = left(current);
-            else
-                max_index = right(current);
-            max_leaf = data_[max_index];
-            if (sinker < max_leaf) {
-                data_[current] = max_leaf;
-                current = max_index;
-            } else {
-                break;
-            }
-        }
-        data_[current] = sinker;
-    }
-
-    void Swim(const size_t target, const size_t top) {
-        if (target <= top)
-            return;
-        T swimmer{data_[target]};
-        size_t current{target};
-        for (; current > top;) {
-            if (swimmer > data_[parent(current)]) {
-                data_[current] = data_[parent(current)];
-                current = parent(current);
-            } else {
-                break;
-            }
-        }
-        data_[current] = swimmer;
-    }
-
-  private:
-    std::vector<T> data_;
+    std::vector<T> heap_;
+    Comp compare_;
 };
 
 }  // namespace heap
