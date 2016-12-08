@@ -23,7 +23,7 @@ template <typename Iter>
 auto GetElemHelper(Iter start) {
     return [start](typename Iter::difference_type offset) ->
            typename Iter::value_type& {
-        return *std::advance(start, offset);
+        return *std::next(start, offset);
     };
 }
 
@@ -37,10 +37,10 @@ void Sink(
     for (;;) {
         auto left = LEFT_NODE(current), right = RIGHT_NODE(current);
         decltype(current) bigger;
-        if (not left < stop) {
+        if (not(left < stop)) {
             return;
         }
-        if (not right < stop) {
+        if (not(right < stop)) {
             bigger = left;
         } else {
             bigger = cmp(GetElem(left), GetElem(right)) ? right : left;
@@ -64,18 +64,13 @@ void Swim(Iter top, Iter tail, Comp cmp = Comp()) {
             std::swap(GetElem(parent), GetElem(current));
             current = parent;
         } else {
-            break;
+            return;
         }
         if (parent == 0) {
-            break;
+            return;
         }
     }
-    Sink(top, next(tail), cmp, current);
 }
-
-#undef LEFT_NODE
-#undef RIGHT_NODE
-#undef PARENT_NODE
 
 }  // anonymous namespace
 
@@ -95,17 +90,25 @@ void Heapify(Iter start, Iter finish, Comp cmp = Comp()) {
  */
 template <typename Iter, typename Comp = std::less<typename Iter::value_type>>
 void PushHeap(Iter start, Iter finish, Comp cmp = Comp()) {
+    if (start == finish) {
+        return;
+    }
     Swim(start, std::prev(finish), cmp);
 }
 
 /**
  * move the first element from the end of the range
  * and maintain the rest as a heap
+ * @return return the iterator point to the popped element
  */
 template <typename Iter, typename Comp = std::less<typename Iter::value_type>>
 Iter PopHeap(Iter start, Iter finish, Comp cmp = Comp()) {
+    if (start == finish) {
+        return finish;
+    }
     std::iter_swap(start, std::prev(finish));
     Sink(start, prev(finish));
+    return prev(finish);
 }
 
 /**
@@ -116,16 +119,16 @@ bool IsHeap(Iter start, Iter finish, Comp cmp = Comp()) {
     auto GetElem = GetElemHelper(start);
     for (typename Iter::difference_type current = 0,
                                         stop = std::distance(start, finish);
-         ;) {
+         ; ++current) {
         auto left = LEFT_NODE(current), right = RIGHT_NODE(current);
-        if (not left < stop) {
+        if (not(left < stop)) {
             break;
         }
-        if (not cmp(GetElem(left), GetElem(current))) {
+        if (cmp(GetElem(current), GetElem(left))) {
             return false;
         }
         if (right < stop) {
-            if (not cmp(GetElem(right), GetElem(current))) {
+            if (cmp(GetElem(current), GetElem(right))) {
                 return false;
             }
         } else {
@@ -134,6 +137,10 @@ bool IsHeap(Iter start, Iter finish, Comp cmp = Comp()) {
     }
     return true;
 }
+
+#undef LEFT_NODE
+#undef RIGHT_NODE
+#undef PARENT_NODE
 
 template <typename T>
 class Heap {
