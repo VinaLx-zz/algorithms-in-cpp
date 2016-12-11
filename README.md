@@ -24,9 +24,14 @@ data structures and algorithms written in cpp
 
 ### Graph
 
+- Minimum Spanning Tree
+    + Prim's
+    + Kruskal's
+
 - Shortest Path
     + SPFA(Shortest Path Faster Algorithm)
-    + Floyd
+    + Floyd's
+    + Dijkstra's
 
 - Topological Sort
 
