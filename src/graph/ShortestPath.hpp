@@ -5,10 +5,10 @@
 #define GRAPH_SHORTEST_PATH_
 
 #include <algorithm>
-#include <utility>
 #include <climits>
 #include <deque>
-#include <map>
+#include <set>
+#include <utility>
 #include <vector>
 #include "graph/WeightedGraph.hpp"
 
@@ -30,13 +30,31 @@ inline bool Has(
 }  // anonymous namespace
 
 /**
- * dijkstra algorithm
+ * dijkstra's algorithm
  * @param graph the weighted graph for calculation
  * @param from  starting vertex
  * @param to    destination vertex
  * @return      total weight of shortest path
  */
-int Dijkstra(const WeightedGraph& graph, Graph::Vertex from, Graph::Vertex to) {
+int Dijkstra(const Graph& graph, Graph::Vertex from, Graph::Vertex to) {
+    std::vector<int> distance_to(graph.VertexSize(), INT_MAX);
+    distance_to[from] = 0;
+    std::set<std::pair<int, Graph::Vertex>> dijk_pq;
+    dijk_pq.insert({0, from});
+    for (; not dijk_pq.empty();) {
+        auto shortest = *begin(dijk_pq);
+        dijk_pq.erase(begin(dijk_pq));
+        auto current_vertex = shortest.second;
+        distance_to[shortest.second] = shortest.first;
+        for (auto edge : graph.AdjacentEdges(current_vertex)) {
+            auto new_distance = distance_to[current_vertex] + edge.weight;
+            if (distance_to[edge.to] > new_distance) {
+                dijk_pq.erase({distance_to[edge.to], edge.to});
+                dijk_pq.insert({distance_to[current_vertex], new_distance});
+            }
+        }
+    }
+    return distance_to[to];
 }
 
 /**
@@ -47,11 +65,11 @@ int Dijkstra(const WeightedGraph& graph, Graph::Vertex from, Graph::Vertex to) {
  * @return      total weight of shortest path
  */
 int Spfa(
-    const WeightedGraph& graph, WeightedGraph::Vertex from,
-    WeightedGraph::Vertex to) {
+    const Graph& graph, Graph::Vertex from,
+    Graph::Vertex to) {
     std::vector<int> distance_to(graph.VertexSize(), INT_MAX);
     distance_to[from] = 0;
-    std::deque<WeightedGraph::Vertex> bfs_queue;
+    std::deque<Graph::Vertex> bfs_queue;
     bfs_queue.push_back(from);
 
     for (; not bfs_queue.empty();) {
@@ -71,13 +89,14 @@ int Spfa(
 }
 
 /**
- * floyd algorithm
+ * floyd;s algorithm
  * @param graph the weighted graph for calculation
  * @return      the matrix whose content is the shortest length between two
  * index
  */
-std::vector<std::vector<int>> Floyd(const WeightedGraph& graph) {
-    std::vector<std::vector<int>> distance(graph.VertexSize(), std::vector<int>(graph.VertexSize(), INT_MAX));
+std::vector<std::vector<int>> Floyd(const Graph& graph) {
+    std::vector<std::vector<int>> distance(
+        graph.VertexSize(), std::vector<int>(graph.VertexSize(), INT_MAX));
     for (Graph::Vertex v = 0; v < graph.VertexSize(); ++v) {
         for (const auto& edge : graph.AdjacentEdges(v)) {
             distance[v][edge.to] = edge.weight;
