@@ -75,17 +75,6 @@ void Swim(Iter top, Iter tail, Comp cmp = Comp()) {
 }  // anonymous namespace
 
 /**
- * heapify the range specified
- */
-template <typename Iter, typename Comp = std::less<typename Iter::value_type>>
-void Heapify(Iter start, Iter finish, Comp cmp = Comp()) {
-    for (Iter current = std::next(start); current != finish;) {
-        PushHeap(start, current, cmp);
-        std::advance(current, 1);
-    }
-}
-
-/**
  * push the last element in the range to the heap
  */
 template <typename Iter, typename Comp = std::less<typename Iter::value_type>>
@@ -94,6 +83,17 @@ void PushHeap(Iter start, Iter finish, Comp cmp = Comp()) {
         return;
     }
     Swim(start, std::prev(finish), cmp);
+}
+
+/**
+ * heapify the range specified
+ */
+template <typename Iter, typename Comp = std::less<typename Iter::value_type>>
+void Heapify(Iter start, Iter finish, Comp cmp = Comp()) {
+    for (Iter current = std::next(start); current != finish;) {
+        PushHeap(start, current, cmp);
+        std::advance(current, 1);
+    }
 }
 
 /**
@@ -107,7 +107,7 @@ Iter PopHeap(Iter start, Iter finish, Comp cmp = Comp()) {
         return finish;
     }
     std::iter_swap(start, std::prev(finish));
-    Sink(start, prev(finish));
+    Sink(start, prev(finish), cmp);
     return prev(finish);
 }
 

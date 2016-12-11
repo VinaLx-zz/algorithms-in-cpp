@@ -22,7 +22,7 @@ class UnionFind {
 
   public:
     /**
-     * connect two vertex
+     * connect two vertices
      */
     void Connect(const Vertex& vertex1, const Vertex& vertex2) {
         IndexType index1 = GetIndex(vertex1), index2 = GetIndex(vertex2);
@@ -30,9 +30,9 @@ class UnionFind {
     }
 
     /**
-     * determine whether two vertex are connected
+     * determine whether two vertices are connected
      */
-    bool IsConnected(const Vertex& vertex1, const Vertex& vertex2) const {
+    bool Connected(const Vertex& vertex1, const Vertex& vertex2) {
         if (not HaveIndex(vertex1) or not HaveIndex(vertex2)) {
             return false;
         }
@@ -51,6 +51,7 @@ class UnionFind {
         }
         IndexType index = index_map_[vertex] = parent_.size();
         parent_.push_back(index);
+        rank_.push_back(1);
         return index;
     }
 
