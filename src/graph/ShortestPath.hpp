@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <climits>
 #include <deque>
+#include <iostream>
 #include <set>
 #include <utility>
 #include <vector>
@@ -45,12 +46,12 @@ int Dijkstra(const Graph& graph, Graph::Vertex from, Graph::Vertex to) {
         auto shortest = *begin(dijk_pq);
         dijk_pq.erase(begin(dijk_pq));
         auto current_vertex = shortest.second;
-        distance_to[shortest.second] = shortest.first;
         for (auto edge : graph.AdjacentEdges(current_vertex)) {
             auto new_distance = distance_to[current_vertex] + edge.weight;
             if (distance_to[edge.to] > new_distance) {
                 dijk_pq.erase({distance_to[edge.to], edge.to});
-                dijk_pq.insert({distance_to[current_vertex], new_distance});
+                dijk_pq.insert({new_distance, edge.to});
+                distance_to[edge.to] = new_distance;
             }
         }
     }
@@ -64,9 +65,7 @@ int Dijkstra(const Graph& graph, Graph::Vertex from, Graph::Vertex to) {
  * @param to    destination vertex
  * @return      total weight of shortest path
  */
-int Spfa(
-    const Graph& graph, Graph::Vertex from,
-    Graph::Vertex to) {
+int Spfa(const Graph& graph, Graph::Vertex from, Graph::Vertex to) {
     std::vector<int> distance_to(graph.VertexSize(), INT_MAX);
     distance_to[from] = 0;
     std::deque<Graph::Vertex> bfs_queue;
