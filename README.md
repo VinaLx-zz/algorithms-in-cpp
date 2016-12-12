@@ -7,6 +7,8 @@ data structures and algorithms written in cpp
 - Heap
 - Union Find
 - Graph
+- BinarySearchTree
+    + Unbalanced Binary Search Tree
 
 ## Algorithms
 
