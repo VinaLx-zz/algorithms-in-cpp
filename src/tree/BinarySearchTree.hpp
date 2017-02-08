@@ -24,56 +24,39 @@ struct BinaryNodeBase {
 template <typename Key>
 class BinarySearchTree {
   public:
-    struct Node : public BinaryNodeBase<Key> {
-        Node(const Key& data, Node* left, Node* right)
-            : BinaryNodeBase<Key>(data, left, right) {}
-    };
+    using Node = BinaryNodeBase<Key>;
 
     ~BinarySearchTree() {
         Clear(root_);
     }
 
-    /**
-     * insert a key into the tree
-     */
     void Insert(const Key& key) {
         root_ = Insert(key, root_);
     }
 
-    /**
-     * erase a key from the tree
-     */
     void Erase(const Key& key) {
         root_ = Erase(key, root_);
     }
 
-    /**
-     * determine whether the tree has a key
-     * @return true if the tree has the key
-     */
     bool Has(const Key& key) const {
         return Has(key, root_);
     }
 
-    /**
-     * clear the whole tree
-     */
     void Clear() {
         Clear(root_);
         root_ = nullptr;
     }
 
-    /**
-     * number of keys in the tree
-     */
     size_t Size() const {
         return size_;
     }
 
+    template <typename Func>
+    void InorderTraverse(Func f) const {
+        InorderTraverse(root_, f);
+    }
+
   private:
-    /**
-     * helper for clear
-     */
     void Clear(Node* node) {
         if (node == nullptr) {
             return;
@@ -82,9 +65,7 @@ class BinarySearchTree {
         Clear(node->right);
         delete node;
     }
-    /**
-     * helper function of insert;
-     */
+
     Node* Insert(const Key& key, Node* root) {
         if (root == nullptr) {
             ++size_;
@@ -102,10 +83,10 @@ class BinarySearchTree {
         if (root == nullptr) {
             return false;
         }
-        if (key < root->value) {
+        if (key < root->data) {
             return Has(key, root->left);
         }
-        if (key > root->value) {
+        if (key > root->data) {
             return Has(key, root->right);
         }
         return true;
@@ -118,13 +99,13 @@ class BinarySearchTree {
         // recursively erase
         if (key < root->data) {
             root->left = Erase(key, root->left);
+            return root;
         } else if (key > root->data) {
             root->right = Erase(key, root->right);
+            return root;
         }
-
         // erase current node
-        
-        Node *temp = root;
+        Node* temp = root;
         // connect child to the root if either is nullptr
         if (root->left == nullptr) {
             root = root->right;
@@ -135,17 +116,19 @@ class BinarySearchTree {
             root->left->right = root->right;
             root = root->left;
         } else {
-            Node *max_in_left;
+            Node* max_in_left;
             root->left = GetMax(root->left, &max_in_left);
             max_in_left->left = root->left;
             max_in_left->right = root->right;
             root = max_in_left;
         }
+
         delete temp;
+        --size_;
         return root;
     }
 
-    Node *GetMax(Node *node, Node **result) {
+    Node* GetMax(Node* node, Node** result) {
         if (node->right == nullptr) {
             *result = node;
             return node->left;
@@ -156,6 +139,16 @@ class BinarySearchTree {
 
     Node* root_ = nullptr;
     size_t size_ = 0;
+
+    template <typename Func>
+    void InorderTraverse(Node* node, Func f) const {
+        if (node == nullptr) {
+            return;
+        }
+        InorderTraverse(node->left, f);
+        f(node->data);
+        InorderTraverse(node->right, f);
+    }
 };
 
 }  // namespace tree
