@@ -32,6 +32,48 @@ Tree InitWith(const Container& cont) {
     return bst;
 }
 
+template <typename Tree, typename Container>
+void TestInsert(Tree& bst, Container cont) {
+    bst.Clear();
+    cont.erase(std::unique(begin(cont), end(cont)), end(cont));
+    ASSERT_TRUE(bst.Size() == 0);
+    size_t count = 0;
+    for (auto& value : cont) {
+        EXPECT_FALSE(bst.Has(value));
+        bst.Insert(value);
+        EXPECT_TRUE(bst.Has(value));
+        ++count;
+        EXPECT_EQ(count, bst.Size());
+        EXPECT_TRUE(CheckSorted(bst));
+    }
+}
+
+template <typename Tree, typename Container>
+void TestErase(Container cont) {
+    cont.erase(std::unique(begin(cont), end(cont)), end(cont));
+    auto bst = InitWith<Tree>(cont);
+    ASSERT_EQ(bst.Size(), cont.size());
+    size_t size = bst.Size();
+    for (auto value : cont) {
+        ASSERT_TRUE(bst.Has(value));
+        bst.Erase(value);
+        --size;
+        EXPECT_EQ(size, bst.Size());
+        EXPECT_FALSE(bst.Has(value));
+        EXPECT_TRUE(CheckSorted(bst));
+    }
+}
+
+vector<int> NonDuplicateInt(size_t size = 500) {
+    vector<int> ret(size);
+    std::generate(begin(ret), end(ret), []() {
+        static int v = 0;
+        return v++;
+    });
+    std::shuffle(begin(ret), end(ret), std::random_device());
+    return ret;
+}
+
 template <typename Bst>
 class BstTest : public testing::Test {};
 
@@ -41,57 +83,34 @@ TYPED_TEST_CASE(BstTest, TreeTypes);
 
 TYPED_TEST(BstTest, SimpleInsertTest) {
     TypeParam bst;
-    ASSERT_EQ(bst.Size(), 0);
-    bst.Insert(1);
-    ASSERT_EQ(bst.Size(), 1);
-    ASSERT_TRUE(bst.Has(1)) << "After insert 1";
-    bst.Insert(2);
-    ASSERT_EQ(bst.Size(), 2);
-    ASSERT_TRUE(bst.Has(2)) << "After insert 2";
-    ASSERT_TRUE(bst.Has(1)) << "After insert 2";
-    ASSERT_TRUE(CheckSorted(bst));
+    TestInsert(bst, vector<int>{1, 2});
 }
 
 TYPED_TEST(BstTest, InsertTest) {
     vector<int> values{6, 4, 8, 9, 1, 0, 3, 5, 7, 2};
     TypeParam bst;
-    for (auto v : values) {
-        bst.Insert(v);
-        EXPECT_TRUE(bst.Has(v));
+    TestInsert(bst, values);
+}
+
+TYPED_TEST(BstTest, RandomInsertTest) {
+    TypeParam bst;
+    for (int i = 0; i < 100; ++i) {
+        TestInsert(bst, NonDuplicateInt());
     }
-    for (auto v : values) {
-        EXPECT_TRUE(bst.Has(v));
-    }
-    EXPECT_TRUE(CheckSorted(bst));
 }
 
 TYPED_TEST(BstTest, EraseTest) {
     vector<int> values{6, 4, 8, 9, 1, 0, 3, 5, 7, 2};
-    auto bst = InitWith<TypeParam>(values);
-    int size = bst.Size();
-    EXPECT_EQ(size, 10);
-    for (auto v : values) {
-        bst.Erase(v);
-        --size;
-        EXPECT_FALSE(bst.Has(v));
-        EXPECT_TRUE(CheckSorted(bst));
-        EXPECT_EQ(bst.Size(), size);
-    }
-    EXPECT_EQ(bst.Size(), 0);
+    TestErase<TypeParam>(values);
 }
 
 TYPED_TEST(BstTest, EraseTest2) {
     vector<int> values{1, 4, 7, 2, 5, 8, 9, 0, 10, 6, 13};
-    auto bst = InitWith<TypeParam>(values);
-    ASSERT_EQ(bst.Size(), 11);
-    int size = bst.Size();
-    for (auto v : values) {
-        bst.Erase(v);
-        EXPECT_FALSE(bst.Has(v));
-        bst.Erase(v);
-        --size;
-        EXPECT_EQ(size, bst.Size());
-        EXPECT_TRUE(CheckSorted(bst));
+    TestErase<TypeParam>(values);
+}
+
+TYPED_TEST(BstTest, RandomEraseTest) {
+    for (int i = 0; i < 100; ++i) {
+        TestErase<TypeParam>(NonDuplicateInt());
     }
-    EXPECT_EQ(bst.Size(), 0);
 }

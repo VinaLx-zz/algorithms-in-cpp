@@ -45,6 +45,7 @@ class BinarySearchTree {
     void Clear() {
         Clear(root_);
         root_ = nullptr;
+        size_ = 0;
     }
 
     size_t Size() const {

@@ -19,6 +19,10 @@ class AvlTree {
         int right_height = 1;
     };
 
+    ~AvlTree() {
+        Clear(root_);
+    }
+
     void Insert(const Key& key) {
         root_ = Insert(key, root_);
     }
@@ -38,6 +42,12 @@ class AvlTree {
     template <typename Func>
     void InorderTraverse(Func f) const {
         InorderTraverse(root_, f);
+    }
+
+    void Clear() {
+        Clear(root_);
+        root_ = nullptr;
+        size_ = 0;
     }
 
   private:
@@ -184,6 +194,15 @@ class AvlTree {
         }
         node->right = GetMax(node->right, result);
         return Rebalance(node);
+    }
+
+    void Clear(Node* node) {
+        if (node == nullptr) {
+            return;
+        }
+        Clear(node->left);
+        Clear(node->right);
+        delete node;
     }
 
     Node* root_ = nullptr;
