@@ -9,6 +9,7 @@ data structures and algorithms written in cpp
 - Graph
 - BinarySearchTree
     + Unbalanced Binary Search Tree
+    + AVL Tree
 
 ## Algorithms
 
