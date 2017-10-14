@@ -24,14 +24,11 @@ class Kmp {
         table_[1] = 0;
         for (size_t substr_size(0), position(2); position < pattern.size();) {
             if (pattern[position - 1] == pattern[substr_size]) {
-                ++substr_size;
-                table_[position++] = substr_size;
+                table_[position++] = ++substr_size;
+            } else if (substr_size > 0) { // try to find the previous substring
+                substr_size = table_[substr_size];
             } else {
-                if (substr_size > 0) { // try to find the previous substring
-                    substr_size = table_[substr_size];
-                } else {
-                    table_[position++] = 0; // next one
-                }
+                table_[position++] = 0; // next one
             }
         }
     }
@@ -50,7 +47,7 @@ class Kmp {
                     return text_pos;
                 }
                 ++pattern_pos;
-            } else if (table_[pattern_pos] != -1) {
+            } else if (pattern_pos != 0) {
                 text_pos = text_pos + pattern_pos - table_[pattern_pos];
                 pattern_pos = table_[pattern_pos];
             } else {
@@ -78,6 +75,6 @@ class Kmp {
     }
 }; // Kmp
 
-} // vinalx
+} // namespace vinalx
 
 #endif // KMP_H_
