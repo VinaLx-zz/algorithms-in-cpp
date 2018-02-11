@@ -24,6 +24,7 @@ data structures and algorithms written in cpp
 ### String
 
 - KMP
+- TRIE
 
 ### Graph
 
